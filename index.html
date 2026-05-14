@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>يزن | مطور ويب</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0d0d14;
+      --card: #13131e;
+      --border: #1f1f30;
+      --accent: #7c6dfa;
+      --accent2: #00e5b0;
+      --text: #eaeaf5;
+      --muted: #6a6a88;
+      --glow: rgba(124,109,250,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cairo', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BG */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: float linear infinite;
+      opacity: 0.5;
+    }
+    .orb1 { width: 350px; height: 350px; background: radial-gradient(circle, #7c6dfa55, transparent); top: -100px; left: -80px; animation-duration: 18s; }
+    .orb2 { width: 280px; height: 280px; background: radial-gradient(circle, #00e5b055, transparent); bottom: 10%; right: -60px; animation-duration: 22s; animation-direction: reverse; }
+    .orb3 { width: 200px; height: 200px; background: radial-gradient(circle, #ff6b9d44, transparent); top: 50%; left: 40%; animation-duration: 28s; }
+
+    @keyframes float {
+      0%   { transform: translate(0,0) rotate(0deg); }
+      33%  { transform: translate(40px,-30px) rotate(120deg); }
+      66%  { transform: translate(-20px,40px) rotate(240deg); }
+      100% { transform: translate(0,0) rotate(360deg); }
+    }
+
+    .bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      animation: twinkle ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity:0; transform:scale(0.5); }
+      50% { opacity:0.8; transform:scale(1.5); }
+    }
+
+    /* WRAPPER */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 4rem;
+      gap: 2.2rem;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* PROFILE CARD */
+    .profile-card {
+      width: 100%;
+      background: linear-gradient(135deg, #13131e, #0f0f1a);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 2.5rem 2rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 60px var(--glow), 0 0 0 1px rgba(124,109,250,0.08);
+      opacity: 0;
+      animation: slideDown 0.7s cubic-bezier(0.34,1.56,0.64,1) forwards 0.2s;
+    }
+
+    .profile-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2), var(--accent));
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer { 0% { background-position:200% 0; } 100% { background-position:-200% 0; } }
+    @keyframes slideDown { from { opacity:0; transform:translateY(-30px); } to { opacity:1; transform:translateY(0); } }
+
+    /* PHOTO */
+    .photo-ring {
+      position: relative;
+      width: 130px; height: 130px;
+    }
+
+    .photo-ring::before {
+      content: '';
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent));
+      background-size: 300% 300%;
+      animation: gradRotate 4s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes gradRotate {
+      0% { background-position:0% 50%; }
+      50% { background-position:100% 50%; }
+      100% { background-position:0% 50%; }
+    }
+
+    .photo-wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--bg);
+      border: 3px solid var(--bg);
+    }
+
+    /* ← غيّر src لمسار صورتك */
+    .photo-wrap img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-placeholder {
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+
+    .profile-name {
+      font-size: 1.9rem;
+      font-weight: 900;
+      text-align: center;
+    }
+    .profile-name span {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .profile-title {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: var(--accent2);
+      text-align: center;
+    }
+
+    .profile-bio {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.9;
+      max-width: 380px;
+    }
+
+    .badges { display:flex; gap:0.6rem; flex-wrap:wrap; justify-content:center; margin-top:0.3rem; }
+    .badge { font-size:0.72rem; padding:0.3rem 0.9rem; border-radius:20px; font-family:'Fira Code',monospace; border:1px solid; }
+    .badge-purple { background:rgba(124,109,250,0.12); color:var(--accent); border-color:rgba(124,109,250,0.3); }
+    .badge-teal   { background:rgba(0,229,176,0.10); color:var(--accent2); border-color:rgba(0,229,176,0.3); }
+    .badge-pink   { background:rgba(255,107,157,0.10); color:#ff6b9d; border-color:rgba(255,107,157,0.3); }
+
+    /* SECTION BLOCKS */
+    .section-block { width:100%; opacity:0; animation:fadeUp 0.6s ease forwards; }
+    .s1 { animation-delay:0.5s; }
+    .s2 { animation-delay:0.7s; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+    .block-title {
+      font-size:0.75rem;
+      font-family:'Fira Code',monospace;
+      color:var(--muted);
+      letter-spacing:2px;
+      text-transform:uppercase;
+      margin-bottom:1rem;
+      display:flex;
+      align-items:center;
+      gap:0.6rem;
+    }
+    .block-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* SKILLS */
+    .skills-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0.8rem; }
+
+    .skill-pill {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:1rem 0.5rem;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:0.4rem;
+      cursor:default;
+      transition:all 0.25s;
+      position:relative;
+      overflow:hidden;
+    }
+    .skill-pill::before {
+      content:'';
+      position:absolute;
+      bottom:0; left:0; right:0;
+      height:2px;
+      background:linear-gradient(90deg,var(--accent),var(--accent2));
+      transform:scaleX(0);
+      transition:transform 0.3s;
+    }
+    .skill-pill:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 8px 24px var(--glow); }
+    .skill-pill:hover::before { transform:scaleX(1); }
+    .skill-pill .sk-icon { font-size:1.6rem; }
+    .skill-pill .sk-name { font-size:0.7rem; font-weight:600; color:var(--text); text-align:center; }
+
+    /* SOCIAL */
+    .social-list { display:flex; flex-direction:column; gap:0.7rem; }
+
+    .social-item {
+      display:flex;
+      align-items:center;
+      gap:1rem;
+      padding:1rem 1.3rem;
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      text-decoration:none;
+      color:var(--text);
+      transition:all 0.25s;
+      position:relative;
+      overflow:hidden;
+    }
+    .social-item::after {
+      content:'';
+      position:absolute;
+      right:0; top:0; bottom:0;
+      width:3px;
+      background:linear-gradient(180deg,var(--accent),var(--accent2));
+      opacity:0;
+      transition:opacity 0.3s;
+    }
+    .social-item:hover { border-color:var(--accent); transform:translateX(-4px); box-shadow:6px 0 24px var(--glow); }
+    .social-item:hover::after { opacity:1; }
+
+    .si-emoji { font-size:1.6rem; width:40px; text-align:center; flex-shrink:0; }
+    .si-info { flex:1; }
+    .si-name { font-size:0.9rem; font-weight:700; }
+    .si-handle { font-size:0.75rem; color:var(--muted); font-family:'Fira Code',monospace; margin-top:0.1rem; }
+    .si-arrow { color:var(--muted); font-size:1rem; transition:color 0.3s,transform 0.3s; }
+    .social-item:hover .si-arrow { color:var(--accent2); transform:translateX(-4px); }
+
+    .footer-text { color:var(--muted); font-size:0.78rem; font-family:'Fira Code',monospace; opacity:0; animation:fadeUp 0.6s ease forwards 1s; }
+    .footer-text span { color:var(--accent); }
+
+    @media (max-width:420px) { .skills-grid { grid-template-columns:repeat(3,1fr); } }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="bg-grid"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+  <div id="particles"></div>
+</div>
+
+<div class="wrapper">
+
+
+  <div class="profile-card">
+    <div class="photo-ring">
+      <div class="photo-wrap">
+        
+
+          <img src="Screenshot 2026-04-27 162100.png" alt="يزن"/>
+        <div class="photo-placeholder">👨‍💻</div>
+      </div>
+    </div>
+
+    <div class="profile-name">أنا <span>يزن</span></div>
+    <div class="profile-title">// web developer & security enthusiast</div>
+    <p class="profile-bio">
+      عمري 14 سنة، شغوف بالبرمجة وتطوير الويب وفحص المواقع.
+      هدفي أصبح مبرمجاً محترفاً وأبني مشاريع تفرق 🚀
+    </p>
+    <div class="badges">
+      <span class="badge badge-purple">Web Dev</span>
+      <span class="badge badge-teal">Pentesting</span>
+      <span class="badge badge-pink">Tool Builder</span>
+    </div>
+  </div>
+
+  
+  <div class="section-block s1">
+    <div class="block-title">⚡ مهاراتي</div>
+    <div class="skills-grid">
+      <div class="skill-pill"><span class="sk-icon">🌐</span><span class="sk-name">HTML</span></div>
+      <div class="skill-pill"><span class="sk-icon">🎨</span><span class="sk-name">CSS</span></div>
+      <div class="skill-pill"><span class="sk-icon">⚡</span><span class="sk-name">JavaScript</span></div>
+      <div class="skill-pill"><span class="sk-icon">🐍</span><span class="sk-name">Python</span></div>
+      <div class="skill-pill"><span class="sk-icon">🔍</span><span class="sk-name">Pentesting</span></div>
+      <div class="skill-pill"><span class="sk-icon">🐧</span><span class="sk-name">Linux</span></div>
+      <div class="skill-pill"><span class="sk-icon">🔧</span><span class="sk-name">Git</span></div>
+      <div class="skill-pill"><span class="sk-icon">🛠️</span><span class="sk-name">Tools</span></div>
+    </div>
+  </div>
+
+
+  <div class="section-block s2">
+    <div class="block-title">🔗 تواصل معي</div>
+    <div class="social-list">
+
+      
+
+      <a href="https://t.me/username" class="social-item">
+        <span class="si-emoji">✈️</span>
+        <div class="si-info">
+          <div class="si-name">تيليغرام</div>
+          <div class="si-handle">@username</div>
+        </div>
+        <span class="si-arrow">←</span>
+      </a>
+
+      <a href="https://github.com/devcodes20
+" class="social-item">
+        <span class="si-emoji">🐙</span>
+        <div class="si-info">
+          <div class="si-name">GitHub</div>
+          <div class="si-handle">github.com/devcodes20
+</div>
+        </div>
+        <span class="si-arrow">←</span>
+      </a>
+
+      <a href="https://instagram.com/mbrmgha" class="social-item">
+        <span class="si-emoji">📸</span>
+        <div class="si-info">
+          <div class="si-name">إنستغرام</div>
+          <div class="si-handle">@mbrmgha</div>
+        </div>
+        <span class="si-arrow">←</span>
+      </a>
+
+      <a href="https://discord.com/users/x882" class="social-item">
+        <span class="si-emoji">🎮</span>
+        <div class="si-info">
+          <div class="si-name">Discord</div>
+          <div class="si-handle">x882</div>
+        </div>
+        <span class="si-arrow">←</span>
+      </a>
+
+      <a href="mailto:ryashyzn19@gmail.com" class="social-item">
+        <span class="si-emoji">✉️</span>
+        <div class="si-info">
+          <div class="si-name">إيميل</div>
+          <div class="si-handle">ryashyzn19@gmail.com</div>
+        </div>
+        <span class="si-arrow">←</span>
+      </a>
+
+    </div>
+  </div>
+
+  <div class="footer-text">made with <span></span> by yazan · © 2025</div>
+
+</div>
+
+<script>
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left:${Math.random()*100}vw;
+      top:${Math.random()*100}vh;
+      animation-duration:${2+Math.random()*4}s;
+      animation-delay:${Math.random()*5}s;
+      background:${Math.random()>0.5?'#7c6dfa':'#00e5b0'};
+    `;
+    container.appendChild(p);
+  }
+</script>
+
+</body>
+</html>
